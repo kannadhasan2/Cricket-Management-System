@@ -1,4 +1,5 @@
 import { useState } from "react";
+import {Link} from "react-router-dom";
 
 const TEAMS = [
     { code: "RCB", name: "Royal Challengers Bengaluru", color: "#D1171B", ink: "#fff" },
@@ -98,7 +99,6 @@ export default function Home() {
         @media (prefers-reduced-motion:reduce){.live-dot{animation:none}}
       `}</style>
 
-      {/* ---------- Header ---------- */}
       <header className="sticky top-0 z-40 bg-[#0B1B4D]/95 text-white backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <a href="#" className="flex items-center gap-3">
@@ -112,7 +112,7 @@ export default function Home() {
 
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
             {NAV.map((n, i) => (
-              <a key={n} href="#" className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FF9A1F] ${i === 0 ? "bg-white/10 text-[#FFB347]" : "text-white/80"}`}>
+              <a key={n} href="/tables" className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FF9A1F] ${i === 0 ? "bg-white/10 text-[#FFB347]" : "text-white/80"}`}>
                 {n}
               </a>
             ))}
@@ -144,7 +144,6 @@ export default function Home() {
         )}
       </header>
 
-      {/* ---------- Hero: live scoreboard ---------- */}
       <section className="relative overflow-hidden bg-[#0B1B4D] text-white">
         <div className="pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full bg-[#FF6A00]/30 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 -left-24 h-[24rem] w-[24rem] rounded-full bg-[#2E5BFF]/30 blur-3xl" />
@@ -181,7 +180,6 @@ export default function Home() {
             </dl>
           </div>
 
-          {/* Live match card */}
           <div className="rounded-3xl bg-white p-5 text-slate-800 shadow-2xl shadow-black/40 sm:p-7">
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-sm font-bold text-red-600">
@@ -222,7 +220,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Team strip */}
         <div className="relative border-t border-white/10 bg-black/20">
           <div className="mx-auto flex max-w-7xl gap-4 overflow-x-auto px-4 py-4 sm:px-6 lg:justify-between lg:px-8">
             {TEAMS.map((t) => <Badge key={t.code} code={t.code} size="h-11 w-11 text-xs" />)}
@@ -230,7 +227,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Fixtures + Points table ---------- */}
       <section id="fixtures" className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-5 lg:px-8 lg:py-20">
         <div className="lg:col-span-2">
           <SectionTitle title="Upcoming matches" sub="The next three games on the calendar." />
@@ -289,7 +285,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Cap race ---------- */}
       <section className="bg-gradient-to-br from-[#FF9A1F] to-[#FF4E00] py-16 text-white lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="font-display text-3xl font-bold sm:text-4xl">Leading the season</h2>
@@ -310,7 +305,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Management modules ---------- */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <SectionTitle title="Everything you need to manage the league" sub="Six modules, one login, built for league officials and franchise staff." />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -325,7 +319,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Teams grid ---------- */}
       <section className="bg-white py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionTitle title="The ten franchises" sub="Select a team to see its squad, fixtures and finances." />
@@ -342,7 +335,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- CTA ---------- */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col items-start justify-between gap-6 rounded-3xl bg-[#0B1B4D] p-8 text-white sm:p-12 md:flex-row md:items-center">
           <div>
@@ -355,7 +347,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Footer ---------- */}
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-sm text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <p>© 2026 IPL League Manager. Demo data for illustration only.</p>
