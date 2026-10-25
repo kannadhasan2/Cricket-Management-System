@@ -5,6 +5,7 @@ import Home from "./components/Home/Home";
 import Register from "./components/Register/Register"; 
 import {ProtectedRoute , PublicOnlyRoute} from "./components/ProtectedRoute/ProtectedRoute";
 import Tables from './components/Tables/Tables'
+import Stats from "./components/Stats/Stats";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/tables" element={<Tables />} />
+          <Route path="/stats" element={<Stats />} />
         </Route>
 
         {/* Admins only. Example for a future page:

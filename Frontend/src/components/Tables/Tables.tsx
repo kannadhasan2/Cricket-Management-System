@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import Footer from "../Footer/Footer";
 
 type Cell = string | number | null;
 type Row = Record<string, Cell>;
@@ -199,6 +200,7 @@ export default function CricketDashboard() {
   };
 
   return (
+    <>
     <div className="cd">
       <style>{CSS}</style>
 
@@ -288,6 +290,8 @@ export default function CricketDashboard() {
         )}
       </main>
     </div>
+    <Footer />
+    </>
   );
 }
 

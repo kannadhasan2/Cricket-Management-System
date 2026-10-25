@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Footer from "../Footer/Footer";
 const TEAMS = [
     { code: "RCB", name: "Royal Challengers Bengaluru", color: "#D1171B", ink: "#fff" },
   { code: "CSK", name: "Chennai Super Kings", color: "#F9CD05", ink: "#1a1a1a" },
@@ -121,7 +122,7 @@ export default function Home() {
 
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
             {NAV.map((n, i) => (
-              <a key={n} href="/tables" className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FF9A1F] ${i === 0 ? "bg-white/10 text-[#FFB347]" : "text-white/80"}`}>
+              <a key={n} href={`${n == "Stats"? "/stats":"/tables"}`} className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FF9A1F] ${i === 0 ? "bg-white/10 text-[#FFB347]" : "text-white/80"}`}>
                 {n}
               </a>
             ))}
@@ -356,16 +357,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-sm text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <p>© 2026 IPL League Manager. Demo data for illustration only.</p>
-          <div className="flex flex-wrap gap-5 font-medium">
-            {["About", "Rules", "Support", "Privacy"].map((l) => (
-              <a key={l} href="#" className="hover:text-[#FF4E00]">{l}</a>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
