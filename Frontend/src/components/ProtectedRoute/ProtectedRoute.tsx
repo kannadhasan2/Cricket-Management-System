@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type{ ReactNode } from "react";
 import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 import { logout, useAuth } from "../Auth/Auth";
 

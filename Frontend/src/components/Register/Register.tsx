@@ -1,4 +1,5 @@
-import { FormEvent, ReactNode, useMemo, useState } from "react";
+import {useMemo, useState } from "react";
+import type {ReactNode,FormEvent} from 'react'
 
 const API: string =
   (import.meta as any).env?.VITE_API_URL ?? "http://localhost:5001/api";
@@ -31,7 +32,7 @@ function checkPassword(pw: string) {
   return { checks, score, ...meter };
 }
 
-export default function Register({ onRegistered, onGoToLogin }: RegisterProps) {
+export default function Register({ onGoToLogin }: RegisterProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");

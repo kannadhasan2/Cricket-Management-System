@@ -1,4 +1,5 @@
-import { FormEvent, useState } from "react";
+import {useState } from "react";
+import type{FormEvent} from "react";
 import type{ LoginResponse } from "../Auth/Auth";
 import { saveSession } from "../Auth/Auth";
 

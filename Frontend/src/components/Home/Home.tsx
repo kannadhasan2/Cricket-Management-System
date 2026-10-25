@@ -12,7 +12,8 @@ const TEAMS = [
   { code: "GT", name: "Gujarat Titans", color: "#1B2133", ink: "#C9A44C" },
   { code: "LSG", name: "Lucknow Super Giants", color: "#00A8E0", ink: "#fff" },
 ];
-const team = (c) => TEAMS.find((t) => t.code === c);
+type TeamCode = /*unresolved*/ any
+const team = (c:any) => TEAMS.find((t) => t.code === c);
 
 const TABLE: [TeamCode, number, number, number, number, string][] = [
   ["GT", 12, 9, 3, 18, "+0.812"],
