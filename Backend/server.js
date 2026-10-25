@@ -5,6 +5,11 @@ const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
+// Return DATE columns as plain "YYYY-MM-DD" strings. Without this, node-pg turns them into JS Dates
+// and the day can shift by one depending on the server's timezone.
+const { types } = require("pg");
+types.setTypeParser(1082, (value) => value);
+
 const pool = require("./db");
 
 const app = express();
@@ -75,6 +80,23 @@ function requireAuth(req, res, next) {
   } catch {
     res.status(401).json({ message: "Your session has expired. Please sign in again." });
   }
+}
+
+// Admin-only routes (add / edit / delete). Checks the role in the database, so removing someone's
+// admin rights takes effect immediately, even if they still hold an older token.
+function requireAdmin(req, res, next) {
+  requireAuth(req, res, async () => {
+    try {
+      const result = await pool.query("SELECT role FROM public.users WHERE user_id = $1", [req.user.sub]);
+      if (result.rows[0]?.role !== "admin") {
+        return res.status(403).json({ success: false, message: "Admin access required." });
+      }
+      next();
+    } catch (error) {
+      console.error("Admin check failed:", error.message);
+      res.status(500).json({ success: false, message: "Could not verify your permissions." });
+    }
+  });
 }
 
 // POST /api/auth/register  { username, password }
@@ -256,6 +278,9 @@ for (const [endpoint, config] of Object.entries(tables)) {
     }
   });
 }
+
+// ───────────── Add / edit / delete for every table (admin only) ─────────────
+require("./crud")(app, { pool, tables, requireAdmin });
 
 // ───────────── Errors (keep these after all routes) ─────────────
 app.use((req, res) => {

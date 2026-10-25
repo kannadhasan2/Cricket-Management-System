@@ -1,13 +1,12 @@
-import {useCallback, useEffect, useMemo, useState } from "react";
-import type{ ReactNode } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, LineChart,
   Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
-import { authFetch, logout, useAuth } from "../Auth/Auth";
-import Footer from "../Footer/Footer";
+import { authFetch } from "../Auth/Auth";
+import AppHeader from "../AppHeader/AppHeader";
 
+/* ───────────── Data shapes (only the columns used here) ───────────── */
 
 interface Person { person_id: number; name: string }
 interface Player { person_id: number; role: string }
@@ -29,6 +28,7 @@ interface Raw {
   performances: Perf[]; auctions: Auction[];
 }
 
+/** Edit these paths if your backend routes are named differently. */
 const SOURCES: Record<keyof Raw, string> = {
   persons: "/persons", players: "/players", umpires: "/umpires", teams: "/teams", sponsors: "/sponsors",
   seasons: "/seasons", venues: "/venues", matches: "/matches", innings: "/innings",
@@ -40,6 +40,7 @@ const EMPTY: Raw = {
   matches: [], innings: [], balls: [], performances: [], auctions: [],
 };
 
+/** Accepts [..], {data:[..]}, {rows:[..]}, {results:[..]} or an object with a single array. */
 function toRows(payload: unknown): any[] | null {
   if (Array.isArray(payload)) return payload;
   if (payload && typeof payload === "object") {
@@ -82,6 +83,7 @@ function useRaw() {
   return { raw, loading, failed, reload: load };
 }
 
+/* ───────────── Statistics (all computed in the browser from the tables) ───────────── */
 
 const num = new Intl.NumberFormat("en-IN");
 const sum = (xs: (number | null | undefined)[]) => xs.reduce<number>((a, b) => a + (b ?? 0), 0);
@@ -110,6 +112,7 @@ function computeStats(r: Raw) {
       .map(([id, value]) => ({ name: P(id), value }));
   const toList = (m: Map<string, number>) => [...m].map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
 
+  // Points table
   const table = new Map<number, { team: string; played: number; won: number; lost: number; nr: number }>();
   const entry = (id: number) => {
     let x = table.get(id);
@@ -129,6 +132,7 @@ function computeStats(r: Raw) {
     .map((x) => ({ ...x, points: x.won * 2 + x.nr, winPct: pct(x.won, x.played) ?? 0 }))
     .sort((a, b) => b.points - a.points || b.winPct - a.winPct);
 
+  // Runs by season
   const bySeason = new Map<number, { runs: number; innings: number; matches: Set<number> }>();
   for (const i of r.innings) {
     const sid = matchSeason.get(i.match_id);
@@ -144,6 +148,7 @@ function computeStats(r: Raw) {
     }))
     .sort((a, b) => a.year - b.year);
 
+  // Top performers
   const runsBy = new Map<number, number>();
   const wktsBy = new Map<number, number>();
   for (const p of r.performances) {
@@ -151,12 +156,14 @@ function computeStats(r: Raw) {
     wktsBy.set(p.player_id, (wktsBy.get(p.player_id) ?? 0) + (p.wickets ?? 0));
   }
 
+  // Auction
   const sales = r.auctions.map((a) => ({ ...a, price: Number(a.sold_price) || 0 }));
   const spendByTeam = new Map<string, number>();
   for (const s of sales) spendByTeam.set(T(s.team_id), (spendByTeam.get(T(s.team_id)) ?? 0) + s.price);
   const topBuys = [...sales].sort((a, b) => b.price - a.price).slice(0, 8)
     .map((s) => ({ name: P(s.player_id), team: T(s.team_id), value: s.price }));
 
+  // Match insights
   const decided = r.matches.filter((m) => m.winner_team_id != null);
   const tossKnown = decided.filter((m) => m.toss_winner_id != null);
   const tossWins = tossKnown.filter((m) => m.toss_winner_id === m.winner_team_id).length;
@@ -165,11 +172,13 @@ function computeStats(r: Raw) {
   const batKnown = decided.filter((m) => firstBat.has(m.match_id));
   const batFirstWins = batKnown.filter((m) => firstBat.get(m.match_id) === m.winner_team_id).length;
 
+  // Squad roles + venues
   const roles = new Map<string, number>();
   for (const p of r.players) roles.set(p.role || "Unknown", (roles.get(p.role || "Unknown") ?? 0) + 1);
   const venues = new Map<string, number>();
   for (const m of r.matches) venues.set(venueName.get(m.venue_id) ?? `Venue ${m.venue_id}`, (venues.get(venueName.get(m.venue_id) ?? `Venue ${m.venue_id}`) ?? 0) + 1);
 
+  // Ball by ball
   const overAgg = new Map<number, { runs: number; inn: Set<number> }>();
   const outcomes = new Map<string, number>();
   const dismissals = new Map<string, number>();
@@ -206,6 +215,7 @@ function computeStats(r: Raw) {
   };
 }
 
+/* ───────────── Small UI pieces ───────────── */
 
 const AXIS = { fill: "#5d6e64", fontSize: 12 };
 const PALETTE = ["#14352a", "#a4161a", "#c9a94f", "#2b6150", "#c77d1a", "#5f9a4c", "#6e0c10", "#8a998f"];
@@ -294,38 +304,17 @@ function Ring({ value, label, note }: { value: number | null; label: string; not
   );
 }
 
+/* ───────────── Page ───────────── */
 
 export default function Stats() {
-  const { user } = useAuth();
   const { raw, loading, failed, reload } = useRaw();
   const s = useMemo(() => computeStats(raw), [raw]);
-
-  const navCls = ({ isActive }: { isActive: boolean }) =>
-    `rounded-md px-3 py-1.5 text-sm font-medium transition ${isActive ? "bg-[#1d4a3a] text-white" : "text-[#c4d3c9] hover:text-white"}`;
 
   return (
     <div className="min-h-screen bg-[#f4f6f2] font-['IBM_Plex_Sans',system-ui,sans-serif] text-[#12201a]">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');`}</style>
 
-      <header className="sticky top-0 z-20 border-b-4 border-[#a4161a] bg-[#14352a] text-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-5 py-3">
-          <Link to="/" className="flex items-center gap-2.5">
-            <span aria-hidden className="h-7 w-7 rounded-full shadow"
-              style={{ background: "radial-gradient(circle at 35% 30%, #d03a3e, #a4161a 60%, #6e0c10)" }} />
-            <span className="font-['Barlow_Condensed'] text-2xl font-bold tracking-wide">Scorebook</span>
-          </Link>
-          <nav className="flex gap-1" aria-label="Main">
-            <NavLink to="/" end className={navCls}>Data tables</NavLink>
-            <NavLink to="/stats" className={navCls}>Stats</NavLink>
-          </nav>
-          <div className="ml-auto flex items-center gap-3 text-sm">
-            <span className="text-[#c4d3c9]">{user?.username} <em className="not-italic text-[#a9bdb1]">({user?.role})</em></span>
-            <button onClick={logout} className="rounded-md border border-[#2b6150] px-3 py-1.5 hover:border-[#d9c38a] hover:bg-[#1d4a3a]">
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="mx-auto max-w-7xl px-5 py-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -424,17 +413,18 @@ export default function Stats() {
                 <Donut data={s.roles} />
               </Panel>
 
+              <Panel className="lg:col-span-2" title="Top wicket takers" empty={!s.topWickets.length}>
+                <HBars data={s.topWickets} color="#a4161a" />
+              </Panel>
               <Panel title="Top run scorers" empty={!s.topRuns.length}>
                 <HBars data={s.topRuns} color="#14352a" />
               </Panel>
-              <Panel title="Top wicket takers" empty={!s.topWickets.length}>
-                <HBars data={s.topWickets} color="#a4161a" />
-              </Panel>
+              
               <Panel title="How batters get out" sub="Dismissal types from ball-by-ball data" empty={!s.dismissals.length}>
                 <Donut data={s.dismissals} />
               </Panel>
 
-              <Panel className="lg:col-span-2" title="Scoring rate by over" sub="Average runs scored in each over of an innings" empty={!s.overTrend.length}>
+              <Panel className="lg:col-span-1" title="Scoring rate by over" sub="Average runs scored in each over of an innings" empty={!s.overTrend.length}>
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={s.overTrend} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
                     <CartesianGrid stroke="#e3e8e1" vertical={false} />
@@ -462,7 +452,7 @@ export default function Stats() {
                 </ResponsiveContainer>
               </Panel>
 
-              <Panel title="Most expensive buys" sub="Highest auction prices" empty={!s.topBuys.length}>
+              <Panel  title="Most expensive buys" sub="Highest auction prices" empty={!s.topBuys.length}>
                 <HBars data={s.topBuys} color="#c9a94f" fmt={inrShort} />
               </Panel>
               <Panel title="Auction spend by team" empty={!s.spendByTeam.length}>
@@ -475,7 +465,6 @@ export default function Stats() {
           </>
         )}
       </main>
-      <Footer />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Footer from "../Footer/Footer";
+import AppHeader from "../AppHeader/AppHeader";
 
 type Cell = string | number | null;
 type Row = Record<string, Cell>;
@@ -201,14 +202,17 @@ export default function CricketDashboard() {
 
   return (
     <>
+    <AppHeader />
     <div className="cd">
       <style>{CSS}</style>
 
+      
+
       <aside className="cd-side">
-        <div className="cd-brand">
+        <a href="/home" className="cd-brand">
           <span className="ball" aria-hidden />
           <div><h1>Scorebook</h1><p>League database</p></div>
-        </div>
+        </a>
         <nav aria-label="Tables">
           {GROUPS.map((g) => (
             <div key={g} className="grp">
