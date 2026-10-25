@@ -1,6 +1,5 @@
 import { useState } from "react";
-import {Link} from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 const TEAMS = [
     { code: "RCB", name: "Royal Challengers Bengaluru", color: "#D1171B", ink: "#fff" },
   { code: "CSK", name: "Chennai Super Kings", color: "#F9CD05", ink: "#1a1a1a" },
@@ -65,6 +64,8 @@ const Badge = ({ code, size = "h-12 w-12 text-sm" }: BadgeProps) => {
   );
 };
 
+
+
 interface SectionTitleProps {
   title: string;
   sub?: string;
@@ -87,6 +88,13 @@ const SectionTitle = ({ title, sub, action }: SectionTitleProps) => (
 
 export default function Home() {
   const [open, setOpen] = useState<boolean>(false);
+  const navigate = useNavigate()
+  const signOut = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="font-body min-h-screen bg-[#F6F3EE] text-slate-800 antialiased">
@@ -119,9 +127,9 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <a href="#" className="hidden rounded-full bg-gradient-to-r from-[#FF9A1F] to-[#FF4E00] px-5 py-2 text-sm font-bold text-white shadow-lg shadow-orange-900/30 hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white sm:inline-block">
-              Sign in
-            </a>
+            <button onClick={signOut} className="hidden rounded-full bg-gradient-to-r from-[#FF9A1F] to-[#FF4E00] px-5 py-2 text-sm font-bold text-white shadow-lg shadow-orange-900/30 hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white sm:inline-block cursor-pointer">
+              Sign Out
+            </button>
             <button
               onClick={() => setOpen(!open)}
               aria-expanded={open}
@@ -137,7 +145,7 @@ export default function Home() {
         {open && (
           <nav className="border-t border-white/10 px-4 pb-4 lg:hidden" aria-label="Mobile">
             {NAV.map((n) => (
-              <a key={n} href="#" className="block rounded-lg px-3 py-3 font-semibold text-white/90 hover:bg-white/10">{n}</a>
+              <a key={n} href="/login" className="block rounded-lg px-3 py-3 font-semibold text-white/90 hover:bg-white/10">{n}</a>
             ))}
             <a href="#" className="mt-2 block rounded-full bg-gradient-to-r from-[#FF9A1F] to-[#FF4E00] px-4 py-3 text-center font-bold">Sign in</a>
           </nav>
