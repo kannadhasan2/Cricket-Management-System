@@ -7,7 +7,6 @@ const API: string =
   (import.meta as any).env?.VITE_API_URL ?? "http://localhost:5001/api";
 
 interface LoginProps {
-  /** Called when the person clicks "Request access" */
   onGoToRegister?: () => void;
 }
 

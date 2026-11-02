@@ -5,8 +5,7 @@ const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
-// Return DATE columns as plain "YYYY-MM-DD" strings. Without this, node-pg turns them into JS Dates
-// and the day can shift by one depending on the server's timezone.
+
 const { types } = require("pg");
 types.setTypeParser(1082, (value) => value);
 
@@ -14,21 +13,17 @@ const pool = require("./db");
 
 const app = express();
 
-// ───────────── Config ─────────────
+
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   console.error("JWT_SECRET is missing in .env");
   process.exit(1);
 }
 
-// If you deploy behind a proxy (Render, Railway, Vercel...), uncomment so rate limiting sees real IPs:
-// app.set("trust proxy", 1);
 
-// ───────────── Middleware ─────────────
 app.use(cors());
 app.use(express.json());
 
-// ───────────── Test routes ─────────────
 app.get("/", (req, res) => {
   res.json({
     message: "Backend server is running!",
@@ -56,7 +51,6 @@ app.get("/api/db-test", async (req, res) => {
   }
 });
 
-// ───────────── Auth ─────────────
 const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 12); // keeps login timing uniform
 
 const authLimiter = rateLimit({
@@ -65,7 +59,6 @@ const authLimiter = rateLimit({
   message: { message: "Too many attempts. Try again in a few minutes." },
 });
 
-// Use on any route that should need a signed-in user
 function requireAuth(req, res, next) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
@@ -82,8 +75,6 @@ function requireAuth(req, res, next) {
   }
 }
 
-// Admin-only routes (add / edit / delete). Checks the role in the database, so removing someone's
-// admin rights takes effect immediately, even if they still hold an older token.
 function requireAdmin(req, res, next) {
   requireAuth(req, res, async () => {
     try {
@@ -99,7 +90,6 @@ function requireAdmin(req, res, next) {
   });
 }
 
-// POST /api/auth/register  { username, password }
 app.post("/api/auth/register", authLimiter, async (req, res) => {
   try {
     const { username, password } = req.body || {};
@@ -131,7 +121,6 @@ app.post("/api/auth/register", authLimiter, async (req, res) => {
   }
 });
 
-// POST /api/auth/login  { username, password, remember }
 app.post("/api/auth/login", authLimiter, async (req, res) => {
   try {
     const { username, password, remember } = req.body || {};
@@ -151,7 +140,6 @@ app.post("/api/auth/login", authLimiter, async (req, res) => {
     );
     const user = result.rows[0];
 
-    // Always run bcrypt so response time doesn't reveal whether the username exists
     const passwordOk = await bcrypt.compare(
       password,
       user ? user.password_hash : DUMMY_HASH
@@ -177,7 +165,6 @@ app.post("/api/auth/login", authLimiter, async (req, res) => {
   }
 });
 
-// GET /api/auth/me  (header: Authorization: Bearer <token>)
 app.get("/api/auth/me", requireAuth, (req, res) => {
   res.json({
     user: { id: req.user.sub, username: req.user.username, role: req.user.role },
